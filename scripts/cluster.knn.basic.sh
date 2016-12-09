@@ -5,6 +5,7 @@ python --version
 set -e
 while true
 do
+  python runSimulation.py -e 0 --dams 1 --year 2005 -a KNN
   python runSimulation.py -e 0 --dams 1 --year 2006 -a KNN
   python runSimulation.py -e 0 --dams 1 --year 2007 -a KNN
   python runSimulation.py -e 0 --dams 1 --year 2008 -a KNN
@@ -15,5 +16,4 @@ do
   python runSimulation.py -e 0 --dams 1 --year 2013 -a KNN
   python runSimulation.py -e 0 --dams 1 --year 2014 -a KNN
   python runSimulation.py -e 0 --dams 1 --year 2015 -a KNN
-  python runSimulation.py -e 0 --dams 1 --year 2007 -a KNN
 done

@@ -5,15 +5,5 @@ python --version
 set -e
 while true
 do
-  python runSimulation.py -e 0 --dams 1 --year 2006 -a Lookup
-  python runSimulation.py -e 0 --dams 1 --year 2007 -a Lookup
-  python runSimulation.py -e 0 --dams 1 --year 2008 -a Lookup
-  python runSimulation.py -e 0 --dams 1 --year 2009 -a Lookup
-  python runSimulation.py -e 0 --dams 1 --year 2010 -a Lookup
-  python runSimulation.py -e 0 --dams 1 --year 2011 -a Lookup
-  python runSimulation.py -e 0 --dams 1 --year 2012 -a Lookup
-  python runSimulation.py -e 0 --dams 1 --year 2013 -a Lookup
-  python runSimulation.py -e 0 --dams 1 --year 2014 -a Lookup
-  python runSimulation.py -e 0 --dams 1 --year 2015 -a Lookup
   python runSimulation.py -e 0 --dams 1 --year 2007 -a Lookup
 done
