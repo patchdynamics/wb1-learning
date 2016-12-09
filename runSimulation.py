@@ -219,7 +219,7 @@ def outputStats(rewards, elevations, wbQIN, wbTIN, actionInds, possibleActions):
         for i in range(numDams):
             action = possibleActions[actionInds[i]]
             #_print action, sum(int(flow) for flow in action)
-            fout.write(str(sum(int(flow) for flow in action)) + ",")
+            np.savetxt(fout, action, fmt="%1f",newline=",")
         fout.write("\n")
     with open(STATS_DIR + QIN_FILE, "a") as fout:
         np.savetxt(fout, wbQIN, newline=",")
