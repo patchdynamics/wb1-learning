@@ -15,7 +15,7 @@ done
 
 
 echo $INDEX > status.log
-RES=$(sbatch --array=1-$PEERS -p DGE ./wait.sh)
+RES=$(sbatch --array=1-$PEERS -p DGE scripts/multi/invoke.$MODE.sh $ALG $FLAGS)
 #RES=$(sbatch --dependency=afterok:${RES##* } -p DGE combine.weights.sh)
 #$INDEX = $((INDEX + 1))
 #RES=$(sbatch --array=1-$PEERS -p DGE ./wait.sh)
