@@ -32,22 +32,16 @@ FUTURE_DISCOUNT = 0.75
 STEP_SIZE = 0.1
 
 # Actions
-# Original
-#SPILLWAY_OUTFLOWS = [0, 600, 1800]
-#POWERHOUSE_OUTFLOWS = [500, 1500, 3000]
-#HYPOLIMNAL_OUTFLOWS = [0, 1000]
-# Simple
-POWERHOUSE_OUTFLOWS = [500, 700, 900, 1100, 1300, 1500, 1700, 1900, 2100, 2300, 2500, 2700, 2900, 3100, 3300, 3500, 3700, 3900, 4100, 4500, 5000, 5500, 6000]
+# Simple for elevation training
 SPILLWAY_OUTFLOWS = [0]
+POWERHOUSE_OUTFLOWS = [300, 500, 700, 900, 1100, 1300, 1500, 1700, 1900, 2100, 2300, 2500, 2700, 2900, 3100, 3300, 3500, 3700, 3900, 4100, 4500, 5000, 5500, 6000]
 HYPOLIMNAL_OUTFLOWS = [0]
-# Two Way
-#POWERHOUSE_OUTFLOWS = [300, 500, 700, 900, 1100, 1300, 1500, 1700, 1900, 2100, 2300, 2500, 2700, 2900, 3100, 3300, 3500]
+# Three way
 #POWERHOUSE_OUTFLOWS = [300, 500, 700, 900, 1100, 1300, 1500, 1700, 1900, 2101, 2300, 2500, 2700, 2900, 3100, 3300, 3500]
 #SPILLWAY_OUTFLOWS = [0, 300, 500, 700, 900, 1100, 1300, 1500, 1700, 1900, 2101, 2300, 2500, 2700, 2900, 3100, 3300, 3500]
 #HYPOLIMNAL_OUTFLOWS = [0, 300, 500, 700, 900, 1100, 1300, 1500, 1700, 1900, 2101, 2300, 2500, 2700, 2900, 3100, 3300, 3500]
-#HYPOLIMNAL_OUTFLOWS = [0, 300, 400, 500, 600, 700, 800, 900, 1000, 1100, 1200, 1300, 1400, 1500, 1600, 1700, 1800, 1900, 2000, 2100, 2200, 2300, 2400, 2500, 2600, 2700, 2800, 2900, 3000, 3100, 3200, 3300, 3400, 3500]
 
-NUM_NEIGHBORS = 8
+NUM_ALLOWED_ACTIONS = 8
 # Reward parameters
 MIN_ELEVATION = 215
 MAX_ELEVATION = 241
@@ -55,10 +49,16 @@ TARGET_HIGH_ELEVATION = 223.5
 TARGET_LOW_ELEVATION = 222.5
 TARGET_ELEVATION = 230
 
+# Actions for Temperature training
+#GATE_OPTIONS = np.array(["Spill", "Power", "Hypo", "Spill-Power", "Hypo-Power"])
+GATE_OPTIONS = np.matrix('1, 0, 0; 0, 1, 0; 0, 0, 1; 0.5, 0.5, 0; 0, 0.5, 0.5')
+
 # Set to true to stop learning
 TESTING = False
 # Randomize inputs to explore the state space (mixnmatch)
-RANDOMIZE = False 
+RANDOMIZE = False
+# Train temperature (false to train elevation)
+TRAIN_TEMP = False
 
 def modifyControlFile(fileDir, timeStart, timeEnd, year):
     with open(fileDir + CON_FILE, "w") as fout:
@@ -83,27 +83,21 @@ def getReward(wb, currentTime):
     wlFile = CONTROL_DIR + "wb" + str(wb+1) + "/" + ELEVATION_FILE
     elevations = np.genfromtxt(wlFile, delimiter=",")
     elevation = elevations[-1,33]
-    #reward = (MAX_ELEVATION - TARGET_ELEVATION - 1) - (elevation - TARGET_ELEVATION)**2
-    reward = 5 +  abs(elevation - TARGET_ELEVATION)
-    if elevation < MIN_ELEVATION or elevation > MAX_ELEVATION:
-        reward = -100
 
-    wbiTIN= np.loadtxt('wb1/tin.npt', skiprows=3)
-    tempIn = wbiTIN[np.where(wbiTIN[:,0]==currentTime),1]
-    print "tempIn", tempIn
+    if TRAIN_TEMP:
+        wbiTIN= np.loadtxt('wb1/tin.npt', skiprows=3)
+        tempIn = wbiTIN[np.where(wbiTIN[:,0]==currentTime),1]
+        print "TEMP IN", tempIn
 
-    temperatureOut = np.loadtxt( "wb" + str(wb+1) + "/two_34.opt", skiprows=3)
-    temperatureOut = temperatureOut[-1,1]
-    #reward = (2+tempIn - temperatureOut) # Positive reward if within 2 of tempIn
-    #if temperatureOut > 16:
-    #    reward = -100
-    #reward = 0
-    #if(currentTime > 100):
-    #    reward = 15 - temperatureOut
-    #    if(temperatureOut >= 18):
-    #        reward = -100
+        temperatureOut = np.loadtxt( "wb" + str(wb+1) + "/two_34.opt", skiprows=3)
+        temperatureOut = temperatureOut[-1,1]
+        reward = (1+tempIn - temperatureOut) # Positive reward if within 1 of tempIn
+    else:
+        #reward = (MAX_ELEVATION - TARGET_ELEVATION - 1) - (elevation - TARGET_ELEVATION)**2
+        reward = 5 - abs(elevation - TARGET_ELEVATION)
+        if elevation < MIN_ELEVATION or elevation > MAX_ELEVATION:
+            reward = -100
 
-    print reward
     return reward, elevation
 
 def copyInInputFiles(year, numDams, randomize=False):
@@ -125,10 +119,6 @@ def copyInOutputFiles(year, numDams):
     for wb in range(1, numDams + 1):
         wbDir = CONTROL_DIR + "wb" + str(wb) + "/"
         spinupDir =  wbDir + "inputs/spinup/" + str(year) + "/"
-        #for f in os.listdir(spinupDir):
-        #    filename = spinupDir + "/" + f
-        #    if os.path.isfile(filename):
-        #        copyfile( filename , CONTROL_DIR + "wb" + str(wb) + "/" + f)
         files = os.listdir(wbDir)
         for file in files:
             if file.endswith(".opt"):
@@ -137,6 +127,8 @@ def copyInOutputFiles(year, numDams):
         copyfile( spinupDir + "spr.opt", wbDir + "spr.opt" )
 
 def calculatePossibleActions():
+    if TRAIN_TEMP:
+        return np.array(GATE_OPTIONS)
     return cartesian((SPILLWAY_OUTFLOWS, POWERHOUSE_OUTFLOWS, HYPOLIMNAL_OUTFLOWS))
 
 # returns state represented as a tuple of (QINs, TINs, airTempForecast, solarFluxForecast, elevations, temps)
@@ -197,16 +189,21 @@ def getState(currentTime, year, actionInds, numActions):
 
 def getAction(state, dam, possibleActions):
     (wbQIN, wbTIN, airTempForecast, solarFluxForecast, elevations, temps) = state
-    actionQOUT = np.sum(possibleActions, 1)
-    # Only allow actions that are 5 NN to QIN
-    distances = (actionQOUT - wbQIN) ** 2
-    allowedActions = np.argpartition(distances, NUM_NEIGHBORS)[:NUM_NEIGHBORS]
+    if TRAIN_TEMP:
+        numActions = len(possibleActions)
+        allowedActions = range(numActions)
+    else:
+        numActions = NUM_ALLOWED_ACTIONS
+        actionQOUT = np.sum(possibleActions, 1)
+        # Only allow actions that are within NUM_ALLOWED_ACTIONS of to QIN
+        distances = (actionQOUT - wbQIN) ** 2
+        allowedActions = np.argpartition(distances, numActions)[:numActions]
     #print(possibleAction[allowedActions])
     #print(np.sum(possibleActions[allowedActions],1))
 
     if not TESTING and random.random() < EPSILON_GREEDY:
         print 'Random'
-        chosenAction = random.randrange( NUM_NEIGHBORS )
+        chosenAction = random.randrange( numActions )
         return allowedActions[chosenAction]
     else:
         [bestActionInd, Vopt] = algorithm.getBestAction(state, dam)
@@ -246,7 +243,7 @@ algClass = getattr(importlib.import_module("algorithms.linear"), "Linear")
 
 if len(sys.argv) > 1:
     try:
-      opts, args = getopt.getopt(sys.argv[1:],"ha:e:r:d:ts:",["eps=", "alg=", "repeat=", "dams=", "days=", "test", "year=", "step=", "rand"])
+      opts, args = getopt.getopt(sys.argv[1:],"ha:e:r:d:ts:",["eps=", "alg=", "repeat=", "dams=", "days=", "test", "year=", "step=", "rand", "temp"])
     except getopt.GetoptError:
       print 'runSimulation.py -a <algorithm> -r <repeat> -e <epsilon> -d <dams>, days=<days> -s <stepsize> --test --rand'
       sys.exit()
@@ -273,10 +270,12 @@ if len(sys.argv) > 1:
           RANDOMIZE = True
       elif opt in ("-a", "--alg"):
           algClass = getattr(importlib.import_module("algorithms."+arg.lower()), arg)
+      elif opt in ("--temp"):
+          TRAIN_TEMP = True
 
 possibleActions = calculatePossibleActions()
 #_print possibleActions
-algorithm = algClass(numDams, STEP_SIZE, FUTURE_DISCOUNT, possibleActions, NUM_NEIGHBORS)
+algorithm = algClass(numDams, STEP_SIZE, FUTURE_DISCOUNT, possibleActions, NUM_ALLOWED_ACTIONS, TRAIN_TEMP)
 for r in range(repeat):
     currentTime = currentTimeBegin
     if(RANDOMIZE):
@@ -298,13 +297,20 @@ for r in range(repeat):
             actionInd = getAction(state, wb, possibleActions)
             actionInds[wb] = actionInd
             action = possibleActions[actionInd]
+            if TRAIN_TEMP:
+                (wbQIN, wbTIN, airTempForecast, solarFluxForecast, elevationVals, temps) = state
+                print 'QIN', wbQIN
+                action = np.multiply(action, wbQIN) # TODO: Make this the output from elevation training instead
+                print 'action', action
+
             wbDir = 'wb'+str(wb+1)+'/'
             ##_print wbDir
             modifyControlFile(wbDir, timeStart, currentTime + timeStep, year)
             setAction(wbDir, currentTime, action, wb)
             path = os.getcwd()
             os.chdir(wbDir)
-            subprocess.check_call(['../bin/cequal', '.'], shell=True)
+            #subprocess.check_call(['/home/mshultz/ror-dam-simulation/bin/cequalw2.v371.linux', '.'], shell=True)
+            subprocess.check_call(['../bin/cequalw2.v371.mac.fast', '.'], shell=True)
             os.chdir(path)
             if wb != (numDams - 1):
                 subprocess.check_call([CHAINING_FILE, "wb" + str(wb+1), "wb" + str(wb+2)])

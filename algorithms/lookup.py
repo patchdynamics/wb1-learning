@@ -5,8 +5,8 @@ QVALUES_FILE = "qvalues.npy"
 
 class Lookup(Base):
 
-    def __init__(self, numDams, stepsize, futureDiscount, possibleActions, numNeighbors):
-        Base.__init__(self, numDams, stepsize, futureDiscount, possibleActions, numNeighbors)
+    def __init__(self, numDams, stepsize, futureDiscount, possibleActions, numAllowedActions, trainTemp):
+        Base.__init__(self, numDams, stepsize, futureDiscount, possibleActions, numAllowedActions, trainTemp)
         self.Qvalues = [{} for i in range(numDams)]
 
     def getQopt(self, state, actionInd, dam):
@@ -36,7 +36,7 @@ class Lookup(Base):
             #print error
             self.Qvalues[i][stateAction] = oldQ + self.stepsize * error
             #print 'newQ'
-            #print self.Qvalues[i][stateAction] 
+            #print self.Qvalues[i][stateAction]
 
     def outputStats(self, statsDir):
         pass
