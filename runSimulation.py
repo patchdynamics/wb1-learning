@@ -301,8 +301,7 @@ for r in range(repeat):
             setAction(wbDir, currentTime, action, wb)
             path = os.getcwd()
             os.chdir(wbDir)
-            #subprocess.check_call(['/home/mshultz/learning/wb1-learning/bin/cequalw2.v371.linux', '.'], shell=True)
-            subprocess.check_call(['../bin/cequalw2.v371.mac.fast', '.'], shell=True)
+            subprocess.check_call(['../bin/cequal', '.'], shell=True)
             os.chdir(path)
             if wb != (numDams - 1):
                 subprocess.check_call([CHAINING_FILE, "wb" + str(wb+1), "wb" + str(wb+2)])
