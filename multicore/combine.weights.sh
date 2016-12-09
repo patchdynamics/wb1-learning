@@ -1,2 +1,2 @@
 #!/bin/bash
-echo 'hi'
+python multicore/combineWeights.py -t <tag> -n <number> -a <algorithm>'
