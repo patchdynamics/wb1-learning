@@ -12,9 +12,7 @@ import re
 import importlib
 from algorithms.linear import Linear
 
-PROJECT_DIR = "../" #ror-dam-simulation directory
-CE_QUAL_W2_EXE = "../bin/cequalw2.v371.mac"
-CONTROL_DIR = PROJECT_DIR + "model-control-chain/"
+CONTROL_DIR = "./"
 TOKENIZED_CON_FILE = "w2_con_tokenized.npt"
 CON_FILE = "w2_con.npt"
 TEMPERATURE_FILE = "spr.opt"
@@ -83,9 +81,9 @@ def getReward(wb, currentTime):
     wlFile = CONTROL_DIR + "wb" + str(wb+1) + "/" + ELEVATION_FILE
     elevations = np.genfromtxt(wlFile, delimiter=",")
     elevation = elevations[-1,33]
-    #reward = (MAX_ELEVATION - TARGET_ELEVATION - 1) - (elevation - TARGET_ELEVATION)**2
-    #if elevation < MIN_ELEVATION or elevation > MAX_ELEVATION:
-    #    reward = -100
+    reward = (MAX_ELEVATION - TARGET_ELEVATION - 1) - (elevation - TARGET_ELEVATION)**2
+    if elevation < MIN_ELEVATION or elevation > MAX_ELEVATION:
+        reward = -100
 
     wbiTIN= np.loadtxt('wb1/tin.npt', skiprows=3)
     tempIn = wbiTIN[np.where(wbiTIN[:,0]==currentTime),1]
@@ -96,11 +94,11 @@ def getReward(wb, currentTime):
     #reward = (2+tempIn - temperatureOut) # Positive reward if within 2 of tempIn
     #if temperatureOut > 16:
     #    reward = -100
-    reward = 0
-    if(currentTime > 100):
-        reward = 15 - temperatureOut
-        if(temperatureOut >= 18):
-            reward = -100
+    #reward = 0
+    #if(currentTime > 100):
+    #    reward = 15 - temperatureOut
+    #    if(temperatureOut >= 18):
+    #        reward = -100
 
     print reward
     return reward, elevation
@@ -303,8 +301,8 @@ for r in range(repeat):
             setAction(wbDir, currentTime, action, wb)
             path = os.getcwd()
             os.chdir(wbDir)
-            #subprocess.check_call(['/home/mshultz/ror-dam-simulation/bin/cequalw2.v371.linux', '.'], shell=True)
-            subprocess.check_call(['../../bin/cequalw2.v371.mac.fast', '.'], shell=True)
+            subprocess.check_call(['/home/mshultz/learning/wb1-learning/bin/cequalw2.v371.linux', '.'], shell=True)
+            #subprocess.check_call(['../../bin/cequalw2.v371.mac.fast', '.'], shell=True)
             os.chdir(path)
             if wb != (numDams - 1):
                 subprocess.check_call([CHAINING_FILE, "wb" + str(wb+1), "wb" + str(wb+2)])

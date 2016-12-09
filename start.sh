@@ -6,4 +6,4 @@ rsync -r * ../$ALG.$MODE
 cd ../$ALG.$MODE
 rm slurm*
 ./scripts/clear.sh
-sbatch --job-name=$ALG$MODE --mail-type=END,FAIL  --mail-user=shultzm@stanford.edu --time=300  scripts/cluster.$ALG.$MODE.sh
+sbatch --job-name=$ALG$MODE --mail-type=END,FAIL  --mail-user=shultzm@stanford.edu -p DGE  scripts/cluster.$ALG.$MODE.sh

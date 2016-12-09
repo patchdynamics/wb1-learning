@@ -10,4 +10,5 @@ then
    mv stats/* $directory
    mv weights.npy $directory
    mv qvalues.npy $directory
+   mv knn.npy $directory
 fi

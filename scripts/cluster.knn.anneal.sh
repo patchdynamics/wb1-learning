@@ -2,7 +2,7 @@
 module load Python/2.7.11
 export PYTHONPATH=$PYTHONPATH:/home/mshultz/virtualenvs/py2.7/lib/python2.7/
 python --version
-echo $anneal
+anneal=(.5 .4 .4 .3 .3 .2 .2 .1 .1 .1 .05 .05 .05 .01 .01 .01 0 0 0)
 set -e
 for epsilon in $anneal
 do
