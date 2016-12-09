@@ -1,10 +1,6 @@
 import numpy as np
 import random
 
-
-MIN_ELEVATION = 215
-MAX_ELEVATION = 225
-
 class Base():
 
     def __init__(self, numDams, stepsize, futureDiscount, possibleActions, numNeighbors):
@@ -89,7 +85,7 @@ class Base():
         solarFluxJudgement = int(solarFluxForecast > 300)
         weatherJudgements[f-1] = [airTempJudgement, solarFluxJudgement]
 
-        elevationLevels = [210,211,212,213,214,215,216,217,218,219,220,221,222,223,224,225,226,227,228,229,230]
+        elevationLevels = [215,216,217,218,219,220,221,222,223,224,225,226,227,228,229,230,231,232,233,234,235,236,237,238,239,240,241]
         elevationJudgements = np.zeros([self.numDams,len(elevationLevels)])
         for wb in range(self.numDams):
             lesser = np.array(elevationLevels) < elevations[wb]
