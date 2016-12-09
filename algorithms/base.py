@@ -90,17 +90,22 @@ class Base():
         solarFluxJudgement = int(solarFluxForecast > 300)
         weatherJudgements[f-1] = [airTempJudgement, solarFluxJudgement]
 
-        elevationLevels = [215,216,217,218,219,220,221,222,223,224,225,226,227,228,229,230,231,232,233,234,235,236,237,238,239,240,241]
-        elevationJudgements = np.zeros([self.numDams,len(elevationLevels)])
+        elevationStep = 1
+        elevationLevels = range(215, 241, elevationStep)
+        elevationJudgements = np.zeros([self.numDams,len(elevationLevels)+2])
         for wb in range(self.numDams):
             lesser = np.array(elevationLevels) < elevations[wb]
-            greater = np.array(elevationLevels) >= elevations[wb]-1
+            greater = np.array(elevationLevels) >= elevations[wb]-elevationStep
             if(np.sum(lesser) == 1):
-                elevationJudgements[wb] = lesser.astype(int)
+                elevationJudgements[wb][:-2] = lesser.astype(int)
             elif(np.sum(greater) == 1):
-                elevationJudgements[wb] = greater.astype(int)
+                elevationJudgements[wb][:-2] = greater.astype(int)
             else:
-                elevationJudgements[wb] = np.logical_and(lesser, greater).astype(int)
+                elevationJudgements[wb][:-2] = np.logical_and(lesser, greater).astype(int)
+            if elevationLevels[0] >= elevations[wb]:
+                elevationJudgements[-2] = 1
+            elif elevationLevels[-1] < elevations[wb]-elevationStep:
+                elevationJudgements[-1] = 1
             if(np.sum(elevationJudgements[wb]) != 1):
                 print elevations[wb]
                 print lesser
@@ -112,22 +117,31 @@ class Base():
             ##_print elevation
             #_print elevationJudgements
 
-        tempLevels = np.arange(4, 22, 0.5)
+        tempStep = 0.5
+        tempLevels = np.arange(4, 22, tempStep)
         temperatureJudgements = np.zeros([self.numDams, 3, len(tempLevels)+2])
         for wb in range(self.numDams):
             for i in range(3):
                 lesser = np.array(tempLevels) < temps[wb][i]
-                greater = np.array(tempLevels) >= temps[wb][i]-0.5
+                greater = np.array(tempLevels) >= temps[wb][i]-tempStep
                 if(np.sum(lesser) == 1):
                     temperatureJudgements[wb][i][:-2] = lesser.astype(int)
                 elif(np.sum(greater) == 1):
                     temperatureJudgements[wb][i][:-2] = greater.astype(int)
                 else:
                     temperatureJudgements[wb][i][:-2] = np.logical_and(lesser, greater).astype(int)
-                if temps[wb][i] < tempLevels[0]:
+                if tempLevels[0] >= temps[wb][i]:
                     temperatureJudgements[-2] = 1
-                elif temps[wb][i] >= tempLevels[-1]:
+                elif tempLevels[-1] < temps[wb][i]-tempStep:
                     temperatureJudgements[-1] = 1
+                if(np.sum(temperatureJudgements[wb][i]) != 1):
+                    print temperatureJudgements[wb]
+                    print lesser
+                    print greater
+                    print temperatureJudgements
+                    print 'ERROR'
+                    raw_input("Press Enter to continue...")
+
 
         # Construct State Array
         if self.trainTemp:
