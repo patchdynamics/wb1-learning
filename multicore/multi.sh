@@ -14,9 +14,12 @@ do
 done  
 
 
-echo $INDEX > status.log
 RES=$(sbatch --array=0-$PEERS -p DGE multicore/invoke.$MODE.sh $ALG '0.5' $FLAGS )
-#RES=$(sbatch --dependency=afterok:${RES##* } -p DGE combine.weights.sh)
-#$INDEX = $((INDEX + 1))
-#RES=$(sbatch --array=1-$PEERS -p DGE ./wait.sh)
-#RES=$(sbatch --dependency=afterok:${RES##* } -p DGE combine.weights.sh)
+RES=$(sbatch --dependency=afterok:${RES##* } -p DGE --mail-type=END,FAIL  --mail-user=shultzm@stanford.edu  multicore/combine.weights.sh ../multicore/$MODE.$ALGl$FLAGS $PEERS)
+anneal=(.4 .4 .3 .3 .2 .2 .1 .1 .1 .05 .05 .05 .01 .01 .01 0 0 0)
+anneal=(.4)
+for epsilon in "${anneal[@]}"
+do
+  RES=$(sbatch --dependency=afterok:${RES##* } --array=0-$PEERS -p DGE multicore/invoke.$MODE.sh $ALG $epsilon $FLAGS )
+  RES=$(sbatch --dependency=afterok:${RES##* } -p DGE --mail-type=END,FAIL  --mail-user=shultzm@stanford.edu  multicore/combine.weights.sh ../multicore/$MODE.$ALGl$FLAGS $PEERS)
+done
