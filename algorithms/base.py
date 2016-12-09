@@ -3,12 +3,13 @@ import random
 
 class Base():
 
-    def __init__(self, numDams, stepsize, futureDiscount, possibleActions, numNeighbors):
+    def __init__(self, numDams, stepsize, futureDiscount, possibleActions, numAllowedActions, trainTemp):
         self.numDams = numDams
         self.stepsize = stepsize
         self.futureDiscount = futureDiscount
         self.possibleActions = possibleActions
-        self.numNeighbors = numNeighbors
+        self.numAllowedActions = numAllowedActions
+        self.trainTemp = trainTemp
 
     ######### Required Methods ############
 
@@ -38,10 +39,14 @@ class Base():
     def getBestAction(self, state, dam):
         #print 'getBestAction'
         (wbQIN, wbTIN, airTempForecast, solarFluxForecast, elevations, temps) = state
-        actionQOUT = np.sum(self.possibleActions, 1)
-        distances = (actionQOUT - wbQIN) ** 2
-        allowedActions = np.argpartition(distances, self.numNeighbors)[:self.numNeighbors]
-        #disallowedActions = [i for i in range(self.possibleActions.shape[0]) if i not in allowedActions]
+
+        if self.trainTemp:
+            numActions = len(self.possibleActions)
+            allowedActions = range(numActions)
+        else:
+            actionQOUT = np.sum(self.possibleActions, 1)
+            distances = (actionQOUT - wbQIN) ** 2
+            allowedActions = np.argpartition(distances, self.numAllowedActions)[:self.numAllowedActions]
 
         Qopts = np.empty(self.possibleActions.shape[0])
         Qopts.fill(-float("inf"))
@@ -107,13 +112,30 @@ class Base():
             ##_print elevation
             #_print elevationJudgements
 
-        temperatureJudgements = (temps > 65).astype(int)
+        tempLevels = np.arange(4, 22, 0.5)
+        temperatureJudgements = np.zeros([self.numDams, 3, len(tempLevels)+2])
+        for wb in range(self.numDams):
+            for i in range(3):
+                lesser = np.array(tempLevels) < temps[wb][i]
+                greater = np.array(tempLevels) >= temps[wb][i]-0.5
+                if(np.sum(lesser) == 1):
+                    temperatureJudgements[wb][i][:-2] = lesser.astype(int)
+                elif(np.sum(greater) == 1):
+                    temperatureJudgements[wb][i][:-2] = greater.astype(int)
+                else:
+                    temperatureJudgements[wb][i][:-2] = np.logical_and(lesser, greater).astype(int)
+                if temps[wb][i] < tempLevels[0]:
+                    temperatureJudgements[-2] = 1
+                elif temps[wb][i] >= tempLevels[-1]:
+                    temperatureJudgements[-1] = 1
 
         # Construct State Array
-        stateArray = elevationJudgements.flatten()
-        #stateArray = np.append(stateArray, weatherJudgements[0,0])
-        stateArray = np.append(stateArray, temperatureJudgements.flatten())
-        #stateArray = np.append(stateArray, wbTINindicators)
-        stateArray = np.append(stateArray, wbQINindicators)
+        if self.trainTemp:
+            stateArray = (temperatureJudgements.flatten())
+            #stateArray = np.append(stateArray, weatherJudgements[0,0])
+            #stateArray = np.append(stateArray, wbTINindicators)
+        else:
+            stateArray = elevationJudgements.flatten()
+            stateArray = np.append(stateArray, wbQINindicators)
 
         return stateArray

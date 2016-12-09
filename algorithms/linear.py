@@ -6,8 +6,8 @@ WEIGHTS_FILE = "weights.npy"
 
 class Linear(Base):
 
-    def __init__(self, numDams, stepsize, futureDiscount, possibleActions, numNeighbors):
-        Base.__init__(self, numDams, stepsize, futureDiscount, possibleActions, numNeighbors)
+    def __init__(self, numDams, stepsize, futureDiscount, possibleActions, numAllowedActions, trainTemp):
+        Base.__init__(self, numDams, stepsize, futureDiscount, possibleActions, numAllowedActions, trainTemp)
         self.weights = None
 
     def getQopt(self, state, actionInd, dam):
@@ -18,7 +18,7 @@ class Linear(Base):
     def getFeatures(self, state, actionInd):
         stateArray = self.discretizeState(state)
         features = np.zeros((stateArray.shape[0], self.possibleActions.shape[0]))
-        features[:, actionInd] = stateArray # TODO: Add a bias term?
+        features[:, actionInd] = stateArray
         return features
 
 

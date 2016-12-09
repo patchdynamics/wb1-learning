@@ -9,44 +9,45 @@ NUM_NEIGHBORS = 5
 NUM_POINTS_PER_DIM = 20
 # TODO: Realistic min/max values
 # State = (logQIN, TIN, airTemp, solarFlux, elevation, waterTemp)
-#MIN_STATE = (6, 4, 0, 0, 210, 4)
-#MAX_STATE = (9, 22, 45, 400, 230, 22)
-MIN_STATE = (6, 215) # QIN = 403, elevation = 215
-MAX_STATE = (8.85, 225) # QIN = 6974, elevation = 225
+MIN_STATE = (6, 4, 0, 0, 215, 4)
+MAX_STATE = (8.85, 22, 45, 400, 225, 22)
 
 class KNN(Base):
 
-    def __init__(self, numDams, stepsize, futureDiscount, possibleActions, numNeighbors):
-        Base.__init__(self, numDams, stepsize, futureDiscount, possibleActions, numNeighbors)
+    def __init__(self, numDams, stepsize, futureDiscount, possibleActions, numAllowedActions, trainTemp):
+        Base.__init__(self, numDams, stepsize, futureDiscount, possibleActions, numAllowedActions, trainTemp)
         self.Qvalues = [{} for i in range(numDams)]
         (self.minList, self.maxList) = self.createListOfMinMaxStateValues()
         self.statePoints = self.createStatePoints()
         print self.statePoints.shape
+        if self.trainTemp:
+            NUM_POINTS_PER_DIM = 36 #0.5 between 4 & 22
 
     def createListOfMinMaxStateValues(self):
-#        (minQIN, minTIN, minAirTempForecast, minSolarFluxForecast, minElevation, minTemp) = MIN_STATE
-#        (maxQIN, maxTIN, maxAirTempForecast, maxSolarFluxForecast, maxElevation, maxTemp) = MAX_STATE
-        (minQIN, minElevation) = MIN_STATE
-        (maxQIN, maxElevation) = MAX_STATE
+        (minQIN, minTIN, minAirTempForecast, minSolarFluxForecast, minElevation, minTemp) = MIN_STATE
+        (maxQIN, maxTIN, maxAirTempForecast, maxSolarFluxForecast, maxElevation, maxTemp) = MAX_STATE
 
         # numDams dimensions for QIN, TIN, elevation. 3*numDams dimensions for temp
         # dimensions = 6 * self.numDams + 2
         minList = []
         maxList = []
-        for i in range(self.numDams):
-            minList.append(minQIN)
-            maxList.append(maxQIN)
-#        for i in range(self.numDams):
-#            minList.append(minTIN)
-#            maxList.append(maxTIN)
-#        minList += [minAirTempForecast, minSolarFluxForecast]
-#        maxList += [maxAirTempForecast, maxSolarFluxForecast]
-        for i in range(self.numDams):
-            minList.append(minElevation)
-            maxList.append(maxElevation)
-#        for i in range(3*self.numDams):
-#            minList.append(minTemp)
-#            maxList.append(maxTemp)
+
+        if self.trainTemp:
+            for i in range(3*self.numDams):
+                minList.append(minTemp)
+                maxList.append(maxTemp)
+    #        for i in range(self.numDams):
+    #            minList.append(minTIN)
+    #            maxList.append(maxTIN)
+    #        minList += [minAirTempForecast, minSolarFluxForecast]
+    #        maxList += [maxAirTempForecast, maxSolarFluxForecast]
+        else:
+            for i in range(self.numDams):
+                minList.append(minQIN)
+                maxList.append(maxQIN)
+            for i in range(self.numDams):
+                minList.append(minElevation)
+                maxList.append(maxElevation)
         return (np.array(minList), np.array(maxList))
 
     def createStatePoints(self):
@@ -58,10 +59,13 @@ class KNN(Base):
 
     def getStateArray(self, state):
         (wbQIN, wbTIN, airTempForecast, solarFluxForecast, elevations, temps) = state
-        logQIN = np.log(wbQIN)
-        #stateArray = np.array([airTempForecast, solarFluxForecast])
-        #stateArray = np.concatenate((logQIN.flatten(), wbTIN.flatten(), stateArray, elevations.flatten(), temps.flatten()))
-        stateArray = np.concatenate((logQIN.flatten(), elevations.flatten()))
+        if self.trainTemp:
+            stateArray = temps.flatten()
+            #stateArray = np.array([airTempForecast, solarFluxForecast])
+            #stateArray = np.concatenate((logQIN.flatten(), wbTIN.flatten(), stateArray, elevations.flatten(), temps.flatten()))
+        else:
+            logQIN = np.log(wbQIN)
+            stateArray = np.concatenate((logQIN.flatten(), elevations.flatten()))
         return stateArray
 
     # Normalize all state dimensions on [-1,1]
@@ -94,15 +98,20 @@ class KNN(Base):
         (neighbors, probs) = self.findNNs(state)
 
         (wbQIN, wbTIN, airTempForecast, solarFluxForecast, elevations, temps) = state
-        actionQOUT = np.sum(self.possibleActions, 1)
-        distances = (actionQOUT - wbQIN) ** 2
-        allowedActions = np.argpartition(distances, 5)[:5]
-        disallowedActions = [i for i in range(self.possibleActions.shape[0]) if i not in allowedActions]
+
+        if self.trainTemp:
+            numActions = len(self.possibleActions)
+            allowedActions = range(numActions)
+        else:
+            actionQOUT = np.sum(self.possibleActions, 1)
+            distances = (actionQOUT - wbQIN) ** 2
+            allowedActions = np.argpartition(distances, self.numAllowedActions)[:self.numAllowedActions]
+
 
         Qopts = np.empty(self.possibleActions.shape[0])
-        for actionInd in range(self.possibleActions.shape[0]):
+        Qopts.fill(-float("inf"))
+        for actionInd in allowedActions:
             Qopts[actionInd] = self.getQopt(state, actionInd, dam, neighbors, probs)
-        Qopts[disallowedActions] = -float("inf")
         bestActionIndices = np.argwhere(Qopts == np.max(Qopts))
         bestActionInd = random.choice(bestActionIndices)[0]
         return bestActionInd, Qopts[bestActionInd]
