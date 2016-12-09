@@ -25,6 +25,7 @@ STATS_DIR = "stats/"
 REWARDS_FILE = "rewards.txt"
 ACTIONS_FILE = "actions.txt"
 QIN_FILE = "QINs.txt"
+TIN_FILE = "TINs.txt"
 
 # Hyperparameters
 EPSILON_GREEDY = 0.1 # TODO: Should start high & decrease over time
@@ -209,7 +210,7 @@ def getAction(state, dam, possibleActions):
         [bestActionInd, Vopt] = algorithm.getBestAction(state, dam)
         return bestActionInd
 
-def outputStats(rewards, elevations, wbQIN, actionInds, possibleActions):
+def outputStats(rewards, elevations, wbQIN, wbTIN, actionInds, possibleActions):
     with open(STATS_DIR + REWARDS_FILE, "a") as fout:
         np.savetxt(fout, rewards, newline=",")
         np.savetxt(fout, elevations, newline=",")
@@ -222,6 +223,9 @@ def outputStats(rewards, elevations, wbQIN, actionInds, possibleActions):
         fout.write("\n")
     with open(STATS_DIR + QIN_FILE, "a") as fout:
         np.savetxt(fout, wbQIN, newline=",")
+        fout.write("\n")
+    with open(STATS_DIR + TIN_FILE, "a") as fout:
+        np.savetxt(fout, wbTIN, newline=",")
         fout.write("\n")
     for i in range(numDams):
         temperatureOut = np.loadtxt( "wb" + str(i+1) + "/two_34.opt", skiprows=3)
@@ -297,9 +301,8 @@ for r in range(repeat):
             actionInd = getAction(state, wb, possibleActions)
             actionInds[wb] = actionInd
             action = possibleActions[actionInd]
+            (wbQIN, wbTIN, airTempForecast, solarFluxForecast, elevationVals, temps) = state
             if TRAIN_TEMP:
-                (wbQIN, wbTIN, airTempForecast, solarFluxForecast, elevationVals, temps) = state
-                print 'QIN', wbQIN
                 action = np.multiply(action, wbQIN) # TODO: Make this the output from elevation training instead
                 print 'action', action
 
@@ -326,12 +329,9 @@ for r in range(repeat):
         if not TESTING:
             algorithm.incorporateObservations(state, actionInds, rewards, nextState)
         #print 'done with observations'
-        if nextState:
-            (wbQIN, wbTIN, airTempForecast, solarFluxForecast, elevationVals, temps) = nextState
-            outputStats(rewards, elevations, wbQIN, actionInds, possibleActions)
-        else:
+        outputStats(rewards, elevations, wbQIN, wbTIN, actionInds, possibleActions)
+        if not nextState:
             # Game over, move to next epoch
-            outputStats(rewards, elevations, [0], actionInds, possibleActions)
             print 'Day ' + str(currentTime)
             print 'Lose'
             print state
