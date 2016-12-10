@@ -191,9 +191,11 @@ def getState(currentTime, year, actionInds, numActions):
 def getAction(state, dam, possibleActions):
     (wbQIN, wbTIN, airTempForecast, solarFluxForecast, elevations, temps) = state
     if TRAIN_TEMP:
+        print 'TEMP'
         numActions = len(possibleActions)
         allowedActions = range(numActions)
     else:
+        print 'ELEV'
         numActions = NUM_ALLOWED_ACTIONS
         actionQOUT = np.sum(possibleActions, 1)
         # Only allow actions that are within NUM_ALLOWED_ACTIONS of to QIN
@@ -241,7 +243,7 @@ currentTimeBegin = 90
 timeStep = 1
 year = 2015
 numDams = 1
-numDays = 215 - currentTimeBegin
+numDays = 244 - currentTimeBegin
 repeat = 1
 algClass = getattr(importlib.import_module("algorithms.linear"), "Linear")
 

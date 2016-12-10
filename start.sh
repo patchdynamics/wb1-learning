@@ -1,9 +1,10 @@
 #!/bin/bash
 ALG=$1
+ALG="${ALG,,}"
 MODE=$2
 FLAGS=$3
 mkdir -p ../$ALG.$MODE$FLAGS
-rsync -r --links * ../$ALG.$MODE$FLAGS
+rsync -r --links --exclude 'models' * ../$ALG.$MODE$FLAGS
 cd ../$ALG.$MODE$FLAGS
 rm slurm*
 ./scripts/clear.sh
