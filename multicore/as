@@ -1,7 +1,0 @@
-#!/bin/bash
-INDEX = 1
-set -e
-for epsilon in "${anneal[@]}"
-do
-  INDEX= epsilon
-  done
