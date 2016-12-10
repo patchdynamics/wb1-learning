@@ -3,7 +3,7 @@ ALG=$1
 ALGl="${ALG,,}"
 FLAG=$3
 EPSILON=$2
-MODE='experimental'
+MODE='elevation'
 TASK=$SLURM_ARRAY_TASK_ID
 cd /home/mshultz/learning/multicore/$MODE.$ALGl$FLAG$TASK
 echo /home/mshultz/learning/multicore/$MODE.$ALGl$FLAG$TASK
@@ -13,11 +13,11 @@ python --version
 set -e
 if [ $TASK -eq 0 ]
 then
-  echo "python runSimulation.py -e 0 --dams 1 --year 2015 -a $ALG --$FLAG --test #> /dev/null"
-  python runSimulation.py -e 0 --dams 1 --year 2014 -a $ALG --$FLAG --test #> /dev/null
+  echo "python runSimulation.py -e 0 --dams 1 --year 2015 -a $ALG --test #> /dev/null"
+  python runSimulation.py -e 0 --dams 1 --year 2014 -a $ALG --test #> /dev/null
 else
   echo $EPSILON
-  echo "python runSimulation.py -e $EPSILON --dams 1 --year 2015 -a $ALG --$FLAG #> /dev/null"
-  python runSimulation.py -e $EPSILON --dams 1 --year 2014 -a $ALG --$FLAG #> /dev/null
+  echo "python runSimulation.py -e $EPSILON --dams 1 --year 2015 -a $ALG #> /dev/null"
+  python runSimulation.py -e $EPSILON --dams 1 --year 2014 -a $ALG  #> /dev/null
 fi
 

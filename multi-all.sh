@@ -1,4 +1,4 @@
-#!/bin.bash
+#!/bin/bash
 ./multicore/multi.sh Linear experimental temp
 ./multicore/multi.sh Lookup experimental temp
 ./multicore/multi.sh KNN experimental temp
