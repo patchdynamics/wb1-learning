@@ -93,7 +93,7 @@ def getReward(wb, currentTime):
         reward = (tempIn - temperatureOut - 100) # Always negative reward to encourage exploration
     else:
         #reward = (MAX_ELEVATION - TARGET_ELEVATION - 1) - (elevation - TARGET_ELEVATION)**2
-        reward = 5 - abs(elevation - TARGET_ELEVATION)
+        reward = 50 - abs(elevation - TARGET_ELEVATION)
         #if elevation < MIN_ELEVATION or elevation > MAX_ELEVATION:
         #    reward = -100
 
@@ -169,15 +169,16 @@ def getState(currentTime, year, actionInds, numActions):
         elevations[f-1] = wbElevations[-1,33]
 
         # Output Structure +/- 65 F / 16 C
-        seg34 = np.loadtxt('wb'+str(f)+'/spr.opt', skiprows=3, usecols=[1,4])
-        seg34ForTime = seg34[np.where(np.floor(seg34[:,0]) == currentTime)]
-        temp220 = float(seg34ForTime[seg34ForTime[:,0].size - 15,1])
-        temp202 = float(seg34ForTime[seg34ForTime[:,0].size - 11,1])
-        temp191 = float(seg34ForTime[seg34ForTime[:,0].size - 6,1])
-        #temp220 = 0
-        #temp202 = 0
-        #temp191 = 0
-        temps[f-1] = [temp220, temp202, temp191]
+        if TRAIN_TEMP:
+            seg34 = np.loadtxt('wb'+str(f)+'/spr.opt', skiprows=3, usecols=[1,4])
+            seg34ForTime = seg34[np.where(np.floor(seg34[:,0]) == currentTime)]
+            temp220 = float(seg34ForTime[seg34ForTime[:,0].size - 15,1])
+            temp202 = float(seg34ForTime[seg34ForTime[:,0].size - 11,1])
+            temp191 = float(seg34ForTime[seg34ForTime[:,0].size - 6,1])
+            #temp220 = 0
+            #temp202 = 0
+            #temp191 = 0
+            temps[f-1] = [temp220, temp202, temp191]
 
     #gateState = np.zeros((numDams, numActions)) #numDams x numActions
     #for i in range(numDams):
@@ -241,7 +242,7 @@ currentTimeBegin = 90
 timeStep = 1
 year = 2015
 numDams = 1
-numDays = 244 - currentTimeBegin
+numDays = 220 - currentTimeBegin
 repeat = 1
 algClass = getattr(importlib.import_module("algorithms.linear"), "Linear")
 
@@ -278,7 +279,7 @@ if len(sys.argv) > 1:
           TRAIN_TEMP = True
 
 possibleActions = calculatePossibleActions()
-#_print possibleActions
+print possibleActions
 algorithm = algClass(numDams, STEP_SIZE, FUTURE_DISCOUNT, possibleActions, NUM_ALLOWED_ACTIONS, TRAIN_TEMP)
 for r in range(repeat):
     currentTime = currentTimeBegin
@@ -321,10 +322,10 @@ for r in range(repeat):
             rewards[wb], elevations[wb] = getReward(wb, currentTime)
             #raw_input("Press Enter to continue...")
         #print rewards
-        if True in (rewards <= -100): # Game over
-            nextState = None
-        else:
-            nextState = getState(currentTime + timeStep, year, actionInds, possibleActions.shape[0])
+        #if True in ( rewards <= -1000): # Game over
+        #    nextState = None
+        #else:
+        nextState = getState(currentTime + timeStep, year, actionInds, possibleActions.shape[0])
         #print nextState
         if not TESTING:
             algorithm.incorporateObservations(state, actionInds, rewards, nextState)

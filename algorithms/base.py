@@ -37,7 +37,7 @@ class Base():
 
 
     def getBestAction(self, state, dam):
-        #print 'getBestAction'
+        print 'getBestAction'
         (wbQIN, wbTIN, airTempForecast, solarFluxForecast, elevations, temps) = state
 
         if self.trainTemp:
@@ -120,27 +120,28 @@ class Base():
         tempStep = 0.5
         tempLevels = np.arange(4, 22, tempStep)
         temperatureJudgements = np.zeros([self.numDams, 3, len(tempLevels)+2])
-        for wb in range(self.numDams):
-            for i in range(3):
-                lesser = np.array(tempLevels) < temps[wb][i]
-                greater = np.array(tempLevels) >= temps[wb][i]-tempStep
-                if(np.sum(lesser) == 1):
-                    temperatureJudgements[wb][i][:-2] = lesser.astype(int)
-                elif(np.sum(greater) == 1):
-                    temperatureJudgements[wb][i][:-2] = greater.astype(int)
-                else:
-                    temperatureJudgements[wb][i][:-2] = np.logical_and(lesser, greater).astype(int)
-                if tempLevels[0] >= temps[wb][i]:
-                    temperatureJudgements[-2] = 1
-                elif tempLevels[-1] < temps[wb][i]-tempStep:
-                    temperatureJudgements[-1] = 1
-                if(np.sum(temperatureJudgements[wb][i]) != 1):
-                    print temperatureJudgements[wb]
-                    print lesser
-                    print greater
-                    print temperatureJudgements
-                    print 'ERROR'
-                    raw_input("Press Enter to continue...")
+        if self.trainTemp:
+          for wb in range(self.numDams):
+              for i in range(3):
+                  lesser = np.array(tempLevels) < temps[wb][i]
+                  greater = np.array(tempLevels) >= temps[wb][i]-tempStep
+                  if(np.sum(lesser) == 1):
+                      temperatureJudgements[wb][i][:-2] = lesser.astype(int)
+                  elif(np.sum(greater) == 1):
+                      temperatureJudgements[wb][i][:-2] = greater.astype(int)
+                  else:
+                      temperatureJudgements[wb][i][:-2] = np.logical_and(lesser, greater).astype(int)
+                  if tempLevels[0] >= temps[wb][i]:
+                      temperatureJudgements[-2] = 1
+                  elif tempLevels[-1] < temps[wb][i]-tempStep:
+                      temperatureJudgements[-1] = 1
+                  if(np.sum(temperatureJudgements[wb][i]) != 1):
+                      print temperatureJudgements[wb]
+                      print lesser
+                      print greater
+                      print temperatureJudgements
+                      print 'ERROR'
+                      raw_input("Press Enter to continue...")
 
 
         # Construct State Array
