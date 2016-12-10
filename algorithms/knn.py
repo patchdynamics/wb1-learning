@@ -129,7 +129,7 @@ class KNN(Base):
                 oldQ = 0
                 if neighborAction in self.Qvalues[i]:
                     oldQ = self.Qvalues[i][neighborAction]
-                error = rewards[i] + self.futureDiscount * Vopt - oldQ
+                error = rewards[i] + self.futureDiscount * Vopt - self.getQopt(state, actionInds[i], i, neighbors, probs)
                 self.Qvalues[i][neighborAction] = oldQ + self.stepsize * error * probs[k]
 
 
