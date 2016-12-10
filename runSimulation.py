@@ -90,7 +90,7 @@ def getReward(wb, currentTime):
 
         temperatureOut = np.loadtxt( "wb" + str(wb+1) + "/two_34.opt", skiprows=3)
         temperatureOut = temperatureOut[-1,1]
-        reward = (1+tempIn - temperatureOut) # Positive reward if within 1 of tempIn
+        reward = (tempIn - temperatureOut - 100) # Always negative reward to encourage exploration
     else:
         #reward = (MAX_ELEVATION - TARGET_ELEVATION - 1) - (elevation - TARGET_ELEVATION)**2
         reward = 5 - abs(elevation - TARGET_ELEVATION)

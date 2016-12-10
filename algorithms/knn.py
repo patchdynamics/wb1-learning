@@ -118,18 +118,19 @@ class KNN(Base):
 
     def incorporateObservations(self, state, actionInds, rewards, nextState):
         (neighbors, probs) = self.findNNs(state)
+        Vopt = self.getQopt(state, actionInds[i], i, neighbors, probs)
         for i in range(self.numDams):
             if not nextState: # Game over, no future rewards
-                Vopt = 0
+                nextVopt = 0
             else:
-                [nextAction, Vopt] = self.getBestAction(nextState, i)
-            print "Vopt", Vopt
+                [nextAction, nextVopt] = self.getBestAction(nextState, i)
+            print "nextVopt", nextVopt
             for k in range(NUM_NEIGHBORS):
                 neighborAction = (neighbors[k], actionInds[i])
                 oldQ = 0
                 if neighborAction in self.Qvalues[i]:
                     oldQ = self.Qvalues[i][neighborAction]
-                error = rewards[i] + self.futureDiscount * Vopt - self.getQopt(state, actionInds[i], i, neighbors, probs)
+                error = rewards[i] + self.futureDiscount * nextVopt - Vopt
                 self.Qvalues[i][neighborAction] = oldQ + self.stepsize * error * probs[k]
 
 
