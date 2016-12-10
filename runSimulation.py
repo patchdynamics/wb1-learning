@@ -130,7 +130,7 @@ def calculatePossibleActions():
         return np.array(GATE_OPTIONS)
     return cartesian((SPILLWAY_OUTFLOWS, POWERHOUSE_OUTFLOWS, HYPOLIMNAL_OUTFLOWS))
 
-# returns state represented as a tuple of (QINs, TINs, airTempForecast, solarFluxForecast, elevations, temps)
+# returns state represented as a tuple of (QINs, TINs, airTempForecast, solarFluxForecast, elevations, temps, time)
 def getState(currentTime, year, actionInds, numActions):
     wbQIN = np.empty(numDams)
     wbTIN = np.empty(numDams)
@@ -185,10 +185,10 @@ def getState(currentTime, year, actionInds, numActions):
     #    gateState[i, actionInds.astype(int)[i]] = 1
     # stateArray = np.append(stateArray, gateState.flatten())
 
-    return (wbQIN, wbTIN, airTempForecast, solarFluxForecast, elevations, temps)
+    return (wbQIN, wbTIN, airTempForecast, solarFluxForecast, elevations, temps, currentTime)
 
 def getAction(state, dam, possibleActions):
-    (wbQIN, wbTIN, airTempForecast, solarFluxForecast, elevations, temps) = state
+    (wbQIN, wbTIN, airTempForecast, solarFluxForecast, elevations, temps, time) = state
     if TRAIN_TEMP:
         print 'TEMP'
         numActions = len(possibleActions)
@@ -302,7 +302,7 @@ for r in range(repeat):
             actionInd = getAction(state, wb, possibleActions)
             actionInds[wb] = actionInd
             action = possibleActions[actionInd]
-            (wbQIN, wbTIN, airTempForecast, solarFluxForecast, elevationVals, temps) = state
+            (wbQIN, wbTIN, airTempForecast, solarFluxForecast, elevationVals, temps, time) = state
             if TRAIN_TEMP:
                 action = np.multiply(action, wbQIN) # TODO: Make this the output from elevation training instead
                 print 'action', action

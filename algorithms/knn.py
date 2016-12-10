@@ -7,10 +7,9 @@ KNN_FILE = "knn.npy"
 
 NUM_NEIGHBORS = 5
 NUM_POINTS_PER_DIM = 20
-# TODO: Realistic min/max values
-# State = (logQIN, TIN, airTemp, solarFlux, elevation, waterTemp)
-MIN_STATE = (6, 4, 0, 0, 215, 4)
-MAX_STATE = (8.85, 22, 45, 400, 225, 22)
+# State = (logQIN, TIN, airTemp, solarFlux, elevation, waterTemp, time)
+MIN_STATE = (6, 4, 0, 0, 215, 4, 90)
+MAX_STATE = (8.85, 22, 45, 400, 225, 22, 244) #TODO: Get time limits from runSimulation
 
 class KNN(Base):
 
@@ -19,13 +18,12 @@ class KNN(Base):
         self.Qvalues = [{} for i in range(numDams)]
         (self.minList, self.maxList) = self.createListOfMinMaxStateValues()
         self.statePoints = self.createStatePoints()
-        print self.statePoints.shape
         if self.trainTemp:
             NUM_POINTS_PER_DIM = 36 #0.5 between 4 & 22
 
     def createListOfMinMaxStateValues(self):
-        (minQIN, minTIN, minAirTempForecast, minSolarFluxForecast, minElevation, minTemp) = MIN_STATE
-        (maxQIN, maxTIN, maxAirTempForecast, maxSolarFluxForecast, maxElevation, maxTemp) = MAX_STATE
+        (minQIN, minTIN, minAirTempForecast, minSolarFluxForecast, minElevation, minTemp, minTime) = MIN_STATE
+        (maxQIN, maxTIN, maxAirTempForecast, maxSolarFluxForecast, maxElevation, maxTemp, maxTime) = MAX_STATE
 
         # numDams dimensions for QIN, TIN, elevation. 3*numDams dimensions for temp
         # dimensions = 6 * self.numDams + 2
@@ -48,29 +46,30 @@ class KNN(Base):
             for i in range(self.numDams):
                 minList.append(minElevation)
                 maxList.append(maxElevation)
+            minList.append(minTime)
+            maxList.append(maxTime)
         return (np.array(minList), np.array(maxList))
 
     def createStatePoints(self):
         stateDimArrays = []
         for d in range(len(self.minList)):
-            dimArray = np.linspace(self.minList[d], self.maxList[d], NUM_POINTS_PER_DIM)
+            dimArray = np.linspace(-1, 1, NUM_POINTS_PER_DIM)
             stateDimArrays.append(dimArray)
         return cartesian(stateDimArrays)
 
     def getStateArray(self, state):
-        (wbQIN, wbTIN, airTempForecast, solarFluxForecast, elevations, temps) = state
+        (wbQIN, wbTIN, airTempForecast, solarFluxForecast, elevations, temps, time) = state
         if self.trainTemp:
             stateArray = temps.flatten()
             #stateArray = np.array([airTempForecast, solarFluxForecast])
             #stateArray = np.concatenate((logQIN.flatten(), wbTIN.flatten(), stateArray, elevations.flatten(), temps.flatten()))
         else:
             logQIN = np.log(wbQIN)
-            stateArray = np.concatenate((logQIN.flatten(), elevations.flatten()))
-        return stateArray
+            stateArray = np.concatenate((logQIN.flatten(), elevations.flatten(), np.array([time])))
+        return self.normalizeState(stateArray)
 
     # Normalize all state dimensions on [-1,1]
-    def normalizeState(self, state):
-        stateArray = self.getStateArray(state)
+    def normalizeState(self, stateArray):
         return 2 * (stateArray - self.minList)/(self.maxList - self.minList) - 1
 
     def findNNs(self, state):
@@ -97,7 +96,7 @@ class KNN(Base):
     def getBestAction(self, state, dam):
         (neighbors, probs) = self.findNNs(state)
 
-        (wbQIN, wbTIN, airTempForecast, solarFluxForecast, elevations, temps) = state
+        (wbQIN, wbTIN, airTempForecast, solarFluxForecast, elevations, temps, time) = state
 
         if self.trainTemp:
             numActions = len(self.possibleActions)

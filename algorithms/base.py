@@ -37,8 +37,8 @@ class Base():
 
 
     def getBestAction(self, state, dam):
-        print 'getBestAction'
-        (wbQIN, wbTIN, airTempForecast, solarFluxForecast, elevations, temps) = state
+        #print 'getBestAction'
+        (wbQIN, wbTIN, airTempForecast, solarFluxForecast, elevations, temps, time) = state
 
         if self.trainTemp:
             numActions = len(self.possibleActions)
@@ -63,7 +63,7 @@ class Base():
         return bestActionInd, Qopts[bestActionInd]
 
     def discretizeState(self, state):
-        (wbQIN, wbTIN, airTempForecast, solarFluxForecast, elevations, temps) = state
+        (wbQIN, wbTIN, airTempForecast, solarFluxForecast, elevations, temps, time) = state
 
         wbQINindicators = np.empty([self.numDams,8])
         wbTINindicators = np.empty([self.numDams,6])
