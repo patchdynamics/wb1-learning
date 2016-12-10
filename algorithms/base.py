@@ -103,9 +103,9 @@ class Base():
             else:
                 elevationJudgements[wb][:-2] = np.logical_and(lesser, greater).astype(int)
             if elevationLevels[0] >= elevations[wb]:
-                elevationJudgements[-2] = 1
+                elevationJudgements[wb][-2] = 1
             elif elevationLevels[-1] < elevations[wb]-elevationStep:
-                elevationJudgements[-1] = 1
+                elevationJudgements[wb][-1] = 1
             if(np.sum(elevationJudgements[wb]) != 1):
                 print elevations[wb]
                 print lesser
@@ -132,9 +132,9 @@ class Base():
                   else:
                       temperatureJudgements[wb][i][:-2] = np.logical_and(lesser, greater).astype(int)
                   if tempLevels[0] >= temps[wb][i]:
-                      temperatureJudgements[-2] = 1
+                      temperatureJudgements[wb][i][-2] = 1
                   elif tempLevels[-1] < temps[wb][i]-tempStep:
-                      temperatureJudgements[-1] = 1
+                      temperatureJudgements[wb][i][-1] = 1
                   if(np.sum(temperatureJudgements[wb][i]) != 1):
                       print temperatureJudgements[wb]
                       print lesser
