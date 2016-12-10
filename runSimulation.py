@@ -44,11 +44,9 @@ HYPOLIMNAL_OUTFLOWS = [0]
 
 NUM_ALLOWED_ACTIONS = 8
 # Reward parameters
-MIN_ELEVATION = 215
-MAX_ELEVATION = 241
-TARGET_HIGH_ELEVATION = 223.5
-TARGET_LOW_ELEVATION = 222.5
-TARGET_ELEVATION = 232
+MIN_ELEVATION = 220
+MAX_ELEVATION = 235
+TARGET_ELEVATION = 227.5
 
 # Actions for Temperature training
 #GATE_OPTIONS = np.array(["Spill", "Power", "Hypo", "Spill-Power", "Hypo-Power"])
@@ -94,7 +92,8 @@ def getReward(wb, currentTime):
         temperatureOut = temperatureOut[-1,1]
         reward = (1+tempIn - temperatureOut) # Positive reward if within 1 of tempIn
     else:
-        reward = (MAX_ELEVATION - TARGET_ELEVATION - 1) - (elevation - TARGET_ELEVATION)**2
+        #reward = (MAX_ELEVATION - TARGET_ELEVATION - 1) - (elevation - TARGET_ELEVATION)**2
+        reward = 5 - abs(elevation - TARGET_ELEVATION)
         if elevation < MIN_ELEVATION or elevation > MAX_ELEVATION:
             reward = -100
 
@@ -190,9 +189,11 @@ def getState(currentTime, year, actionInds, numActions):
 def getAction(state, dam, possibleActions):
     (wbQIN, wbTIN, airTempForecast, solarFluxForecast, elevations, temps) = state
     if TRAIN_TEMP:
+        print 'TEMP'
         numActions = len(possibleActions)
         allowedActions = range(numActions)
     else:
+        print 'ELEV'
         numActions = NUM_ALLOWED_ACTIONS
         actionQOUT = np.sum(possibleActions, 1)
         # Only allow actions that are within NUM_ALLOWED_ACTIONS of to QIN
@@ -240,7 +241,7 @@ currentTimeBegin = 90
 timeStep = 1
 year = 2015
 numDams = 1
-numDays = 215 - currentTimeBegin
+numDays = 244 - currentTimeBegin
 repeat = 1
 algClass = getattr(importlib.import_module("algorithms.linear"), "Linear")
 
@@ -312,7 +313,7 @@ for r in range(repeat):
             path = os.getcwd()
             os.chdir(wbDir)
             #subprocess.check_call(['/home/mshultz/ror-dam-simulation/bin/cequalw2.v371.linux', '.'], shell=True)
-            subprocess.check_call(['../bin/cequalw2.v371.mac.fast', '.'], shell=True)
+            subprocess.check_call(['../bin/cequal', '.'], shell=True)
             os.chdir(path)
             if wb != (numDams - 1):
                 subprocess.check_call([CHAINING_FILE, "wb" + str(wb+1), "wb" + str(wb+2)])

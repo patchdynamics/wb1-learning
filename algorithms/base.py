@@ -112,7 +112,7 @@ class Base():
                 print greater
                 print elevationJudgements
                 print 'ERROR'
-                raw_input("Press Enter to continue...")
+            #    raw_input("Press Enter to continue...")
             ##_print 'Elevation Judgements'
             ##_print elevation
             #_print elevationJudgements

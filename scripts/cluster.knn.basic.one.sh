@@ -5,5 +5,5 @@ python --version
 set -e
 while true
 do
-  python runSimulation.py -e 0 --dams 1 --year 2012 -a KNN
+  python runSimulation.py -e 0 --dams 1 --year 2011 -a KNN
 done
