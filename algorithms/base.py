@@ -143,8 +143,8 @@ class Base():
                       raw_input("Press Enter to continue...")
 
         # Time State
-        time = stateTime - 90
-        time = time / 30  # integer division
+        time = stateTime
+        time = time / 31  # integer division
         timeIndicators = np.zeros(12)
         timeIndicators[time] = 1
 
