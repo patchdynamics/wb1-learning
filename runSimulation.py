@@ -94,8 +94,8 @@ def getReward(wb, currentTime):
     else:
         #reward = (MAX_ELEVATION - TARGET_ELEVATION - 1) - (elevation - TARGET_ELEVATION)**2
         reward = 5 - abs(elevation - TARGET_ELEVATION)
-        if elevation < MIN_ELEVATION or elevation > MAX_ELEVATION:
-            reward = -100
+        #if elevation < MIN_ELEVATION or elevation > MAX_ELEVATION:
+        #    reward = -100
 
     return reward, elevation
 

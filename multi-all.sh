@@ -5,3 +5,4 @@
 ./multicore/multi.sh Linear elevation
 ./multicore/multi.sh Lookup elevation
 ./multicore/multi.sh KNN elevation
+./multicore/multi.sh KNN nolose.elevation
