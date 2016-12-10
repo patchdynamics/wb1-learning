@@ -14,9 +14,9 @@ except getopt.GetoptError:
 for opt, arg in opts:
     if opt == '-t':
         dirTag = arg
-    if opt == '-n':
+    elif opt == '-n':
         numCores = int(arg)
-    if opt == '-a':
+    elif opt == '-a':
         algorithm = arg
 
 if algorithm == "Linear":

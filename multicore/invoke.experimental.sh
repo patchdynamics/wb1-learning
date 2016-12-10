@@ -14,10 +14,10 @@ set -e
 if [ $TASK -eq 0 ]
 then
   echo "python runSimulation.py -e 0 --dams 1 --year 2015 -a $ALG --$FLAG --test #> /dev/null"
-  python runSimulation.py -e 0 --dams 1 --year 2015 -a $ALG $FLAG --test #> /dev/null
+  python runSimulation.py -e 0 --dams 1 --year 2015 -a $ALG --$FLAG --test #> /dev/null
 else
   echo $EPSILON
   echo "python runSimulation.py -e $EPSILON --dams 1 --year 2015 -a $ALG --$FLAG #> /dev/null"
-  python runSimulation.py -e $EPSILON --dams 1 --year 2015 -a $ALG $FLAG #> /dev/null
+  python runSimulation.py -e $EPSILON --dams 1 --year 2015 -a $ALG --$FLAG #> /dev/null
 fi
 
