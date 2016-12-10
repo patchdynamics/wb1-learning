@@ -188,7 +188,7 @@ def getState(currentTime, year, actionInds, numActions):
     return (wbQIN, wbTIN, airTempForecast, solarFluxForecast, elevations, temps, currentTime)
 
 def getAction(state, dam, possibleActions):
-    (wbQIN, wbTIN, airTempForecast, solarFluxForecast, elevations, temps, time) = state
+    (wbQIN, wbTIN, airTempForecast, solarFluxForecast, elevations, temps, stateTime) = state
     if TRAIN_TEMP:
         print 'TEMP'
         numActions = len(possibleActions)
@@ -302,7 +302,7 @@ for r in range(repeat):
             actionInd = getAction(state, wb, possibleActions)
             actionInds[wb] = actionInd
             action = possibleActions[actionInd]
-            (wbQIN, wbTIN, airTempForecast, solarFluxForecast, elevationVals, temps, time) = state
+            (wbQIN, wbTIN, airTempForecast, solarFluxForecast, elevationVals, temps, stateTime) = state
             if TRAIN_TEMP:
                 action = np.multiply(action, wbQIN) # TODO: Make this the output from elevation training instead
                 print 'action', action
