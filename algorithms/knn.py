@@ -2,14 +2,14 @@ from base import Base
 import numpy as np
 from sklearn.utils.extmath import cartesian
 import random
+from configuration import *
 
 KNN_FILE = "knn.npy"
 
 NUM_NEIGHBORS = 5
 NUM_POINTS_PER_DIM = 20
-# State = (logQIN, TIN, airTemp, solarFlux, elevation, waterTemp, time)
-MIN_STATE = (6, 4, 0, 0, 230, 4, 1)
-MAX_STATE = (8.85, 22, 45, 400, 235, 22, 365)
+MIN_STATE = (np.log(MIN_QIN), MIN_WATER_TEMP, MIN_AIR_TEMP, MIN_SOLAR_FLUX, MIN_ELEVATION, MIN_WATER_TEMP, MIN_TIME)
+MAX_STATE = (np.log(MAX_QIN), MAX_WATER_TEMP, MAX_AIR_TEMP, MAX_SOLAR_FLUX, MAX_ELEVATION, MAX_WATER_TEMP, MAX_TIME)
 
 class KNN(Base):
 

@@ -1,16 +1,9 @@
 from linear import Linear
 import numpy as np
 from sklearn.utils.extmath import cartesian
+from configuration import *
 
 WEIGHTS_FILE = "weightsCont.npy"
-QIN_MIN = 400
-QIN_MAX = 7000
-ELEVATION_MIN = 220
-ELEVATION_MAX = 235
-TEMP_MIN = 4
-TEMP_MAX = 22
-TIME_MIN = 1
-TIME_MAX = 365
 
 class ContLinear(Linear):
 
@@ -25,12 +18,12 @@ class ContLinear(Linear):
         if self.trainTemp:
             for wb in range(self.numDams):
                 for i in range(3):
-                    stateVariables.append((temps[wb][i]-TEMP_MIN)/(TEMP_MAX - TEMP_MIN)) #TODO: Rescaling needed?
+                    stateVariables.append((temps[wb][i]-MIN_WATER_TEMP)/(MAX_WATER_TEMP - MIN_WATER_TEMP)) #TODO: Rescaling needed?
         else:
             for wb in range(self.numDams):
-                stateVariables.append((wbQIN[wb]-QIN_MIN)/(QIN_MAX-QIN_MIN))
-                stateVariables.append((elevations[wb]-ELEVATION_MIN)/(ELEVATION_MAX-ELEVATION_MIN))
-            stateVariables.append((float(time)-TIME_MIN)/(TIME_MAX-TIME_MIN))
+                stateVariables.append((wbQIN[wb]-MIN_QIN)/(MAX_QIN-MIN_QIN))
+                stateVariables.append((elevations[wb]-MIN_ELEVATION)/(MAX_ELEVATION-MIN_ELEVATION))
+            stateVariables.append((float(time)-MIN_TIME)/(MAX_TIME-MIN_TIME))
 
         stateFeatures = np.array(stateVariables)
         interactionTerms = np.prod(cartesian((stateVariables, stateVariables)), axis=1) # Interaction & square terms

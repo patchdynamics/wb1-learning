@@ -44,8 +44,6 @@ HYPOLIMNAL_OUTFLOWS = [0]
 
 NUM_ALLOWED_ACTIONS = 8
 # Reward parameters
-MIN_ELEVATION = 220
-MAX_ELEVATION = 235
 TARGET_ELEVATION = 227.5
 
 # Actions for Temperature training
