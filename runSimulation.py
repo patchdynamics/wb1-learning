@@ -187,7 +187,7 @@ def getState(currentTime, year, actionInds, numActions):
 
     return (wbQIN, wbTIN, airTempForecast, solarFluxForecast, elevations, temps, currentTime)
 
-def getAction(state, dam, possibleActions):
+def getAction(state, dam, possibleActions, currentTime):
     (wbQIN, wbTIN, airTempForecast, solarFluxForecast, elevations, temps, stateTime) = state
     if TRAIN_TEMP:
         print 'TEMP'
@@ -203,8 +203,10 @@ def getAction(state, dam, possibleActions):
     #print(possibleAction[allowedActions])
     #print(np.sum(possibleActions[allowedActions],1))
 
-    if not TESTING and random.random() < EPSILON_GREEDY:
+    if not TESTING and random.random() < (EPSILON_GREEDY - .5 * (numDays-(currentTime-90))/float(numDays)):
         print 'Random'
+        print (numDays-(currentTime-90))/float(numDays)
+        print EPSILON_GREEDY - .5 * (numDays-(currentTime-90))/float(numDays)
         chosenAction = random.randrange( numActions )
         return allowedActions[chosenAction]
     else:
@@ -299,7 +301,7 @@ for r in range(repeat):
         print 'Day ' + str(currentTime)
         copyInOutputFiles(year, numDams)
         for wb in range(numDams):
-            actionInd = getAction(state, wb, possibleActions)
+            actionInd = getAction(state, wb, possibleActions, currentTime)
             actionInds[wb] = actionInd
             action = possibleActions[actionInd]
             (wbQIN, wbTIN, airTempForecast, solarFluxForecast, elevationVals, temps, stateTime) = state

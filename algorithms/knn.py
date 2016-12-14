@@ -8,7 +8,7 @@ KNN_FILE = "knn.npy"
 NUM_NEIGHBORS = 5
 NUM_POINTS_PER_DIM = 20
 # State = (logQIN, TIN, airTemp, solarFlux, elevation, waterTemp, time)
-MIN_STATE = (6, 4, 0, 0, 230, 4, 1)
+MIN_STATE = (6, 4, 0, 0, 220, 4, 1)
 MAX_STATE = (8.85, 22, 45, 400, 235, 22, 365)
 
 class KNN(Base):
